@@ -47,11 +47,13 @@ class ConnexionController extends Controller{
 			$reponse='{"status":0,"data":0}';
 	   }
 	   return new Response(strval($reponse));
-	  // return new Response($token->getToken());
+	 //  $reponse='{"status":0,"data":0}';
+	  // return new Response(strval($reponse));
+	   return new Response($token->getToken());
 	   
 	}
 	/**
-	 * @Route("auth")
+	 * @Route("/auth")
 	 */
 	 public function authentification(){
 		 header("Access-Control-allow-Origin: *");
