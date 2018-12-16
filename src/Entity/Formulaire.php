@@ -26,6 +26,16 @@ class Formulaire
      */
     private $titre;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $campagne;
+
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $dateCreation;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -51,6 +61,30 @@ class Formulaire
     public function setTitre(string $titre): self
     {
         $this->titre = $titre;
+
+        return $this;
+    }
+
+    public function getCampagne(): ?int
+    {
+        return $this->campagne;
+    }
+
+    public function setCampagne(?int $campagne): self
+    {
+        $this->campagne = $campagne;
+
+        return $this;
+    }
+
+    public function getDateCreation(): ?\DateTimeInterface
+    {
+        return $this->dateCreation;
+    }
+
+    public function setDateCreation(\DateTimeInterface $dateCreation): self
+    {
+        $this->dateCreation = $dateCreation;
 
         return $this;
     }

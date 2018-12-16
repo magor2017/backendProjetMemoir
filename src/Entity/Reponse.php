@@ -26,6 +26,11 @@ class Reponse
      */
     private $reponse;
 
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $campagne;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -51,6 +56,18 @@ class Reponse
     public function setReponse(string $reponse): self
     {
         $this->reponse = $reponse;
+
+        return $this;
+    }
+
+    public function getCampagne(): ?int
+    {
+        return $this->campagne;
+    }
+
+    public function setCampagne(int $campagne): self
+    {
+        $this->campagne = $campagne;
 
         return $this;
     }

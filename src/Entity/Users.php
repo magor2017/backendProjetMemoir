@@ -51,6 +51,16 @@ class Users
      */
     private $accessLevel;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $niveau;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $classe;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -136,6 +146,30 @@ class Users
     public function setAccessLevel(int $accessLevel): self
     {
         $this->accessLevel = $accessLevel;
+
+        return $this;
+    }
+
+    public function getNiveau(): ?string
+    {
+        return $this->niveau;
+    }
+
+    public function setNiveau(?string $niveau): self
+    {
+        $this->niveau = $niveau;
+
+        return $this;
+    }
+
+    public function getClasse(): ?string
+    {
+        return $this->classe;
+    }
+
+    public function setClasse(?string $classe): self
+    {
+        $this->classe = $classe;
 
         return $this;
     }
