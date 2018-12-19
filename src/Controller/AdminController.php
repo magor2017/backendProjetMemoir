@@ -85,7 +85,7 @@ class AdminController extends Controller{
         return new Response(json_encode($reponse));
 	}
 	/**
-	 * @Route("/getForm")
+	 * @Route("/getFormee")
 	 */
 	public function getForm(){
 		header("Access-Control-allow-Origin: *");
@@ -103,10 +103,39 @@ class AdminController extends Controller{
 		header("Access-Control-allow-Origin: *");
 		$em=$this->getDoctrine()->getManager();
 		$datas=json_decode($_POST["param"]);
-		$campagne=$this->getDoctrine()->getRepository(Campagne::class)->find(intval($datas->id));
+		$campagne=$this->getDoctrine()->getRepository(Campagne::class)->findOneBy(["id" =>2]);
+		//$campagne->setFormulaire($datas->form);
+		//$em->persist($campagne);
+		//$em->flush();
+		return new Response(json_encode($campagne->getFormulaire()));
+	}
+	/**
+	 * @Route("/supprimerFormulaire")
+	 */
+	public function supprimerFormulaire(){
+		header("Access-Control-allow-Origin: *");
+		$em=$this->getDoctrine()->getManager();
+		$datas=json_decode($_POST["param"]);
+		$campagne=$this->getDoctrine()->getRepository(Campagne::class)->findOneBy(["id" =>$datas->id]);
 		$campagne->setFormulaire($datas->form);
+		//$em->persist($campagne);
 		$em->flush();
-		return new Response(json_encode($datas->form));
+		return new Response(json_encode("ok"));
+
+	}
+	/**
+	 * @Route("/getCampagneById")
+	 */
+	public function getCampagneById(){
+		header("Access-Control-allow-Origin: *");
+		$em=$this->getDoctrine()->getManager();
+		$datas=json_decode($_POST["param"]);
+		$campagne=$this->getDoctrine()->getRepository(Campagne::class)->findOneBy(["id" =>intval($datas->id)]);
+		//$campagne->setFormulaire($datas->form);
+		//$em->persist($campagne);
+		//$em->flush();
+		return new Response(json_encode(array("id"=>$campagne->getId(),"nom"=>$campagne->getNom(),"objectif"=>$campagne->getObjectif(),"observation"=>$campagne->getObservation(),"etat"=>$campagne->getEtat(),"date_debut"=>$campagne->getDateDebut(),"date_fin"=>$campagne->getDateFin(),"date_creation"=>$campagne->getDateCreation(),"formulaire"=>$campagne->getFormulaire())));
+
 	}
 	/**
 	 * @Route("/getAllCible")
@@ -127,15 +156,37 @@ class AdminController extends Controller{
 		header("Access-Control-allow-Origin: *");
 		$datas=json_decode($_POST['param']);
 		$linkcible=new Linkcible();
-		$linkcible->setCampagne(intval($datas->campagne));
-		$linkcible->setFormulaire(intval($datas->form));
-		$linkcible->setNiveau($datas->niveau);
-		$linkcible->setClasse($datas->classe);
 		$em=$this->getDoctrine()->getManager();
-		$em->persist($linkcible);
-		$em->flush();
+		$l=$this->getDoctrine()->getRepository(Linkcible::class)->findOneBy(["campagne"=>intval($datas->campagne),"formulaire"=>intval($datas->form)]);
+		if(!$l){
+			$linkcible->setCampagne(intval($datas->campagne));
+			$linkcible->setFormulaire(intval($datas->form));
+			$linkcible->setNiveau($datas->niveau);
+			$linkcible->setClasse($datas->classe);
+			$em->persist($linkcible);
+			$em->flush();
+		}else{
+			$l->setCampagne(intval($datas->campagne));
+			$l->setFormulaire(intval($datas->form));
+			$l->setNiveau($datas->niveau);
+			$l->setClasse($datas->classe);
+			$em->flush();
+		}
 		return new Response("ok");
 
+	}
+	/**
+	 * @Route("/voirCible")
+	 */
+	public function voirCible(){
+		header("Access-Control-allow-Origin: *");
+		$datas=json_decode($_POST['param']);
+		$link=$this->getDoctrine()->getRepository(Linkcible::class)->findOneBy(["campagne" =>intval($datas->campagne),"formulaire"=>intval($datas->form)]);
+		$rep=[];
+		if($link){
+			$rep[]=array("campagne"=>$link->getCampagne(),"form"=>$link->getFormulaire(),"niveau"=>$link->getNiveau(),"classe"=>$link->getClasse());
+		}
+		return new Response(json_encode($rep));
 	}
 }
 ?>
