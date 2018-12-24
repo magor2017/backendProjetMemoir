@@ -103,11 +103,11 @@ class AdminController extends Controller{
 		header("Access-Control-allow-Origin: *");
 		$em=$this->getDoctrine()->getManager();
 		$datas=json_decode($_POST["param"]);
-		$campagne=$this->getDoctrine()->getRepository(Campagne::class)->findOneBy(["id" =>2]);
-		//$campagne->setFormulaire($datas->form);
+		$campagne=$this->getDoctrine()->getRepository(Campagne::class)->findOneBy(["id" =>$datas->id]);
+		$campagne->setFormulaire($datas->form);
 		//$em->persist($campagne);
-		//$em->flush();
-		return new Response(json_encode($campagne->getFormulaire()));
+		$em->flush();
+		return new Response("ok");
 	}
 	/**
 	 * @Route("/supprimerFormulaire")
