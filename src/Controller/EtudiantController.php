@@ -34,11 +34,22 @@ class EtudiantController extends Controller{
 	   }
 	   $link=$this->testpdo($etudiant->getNiveau(),$etudiant->getClasse());
 //$em=$this->getDoctrine()->getManager()->getRepository(Formulaire::class)->findAll();
+       
        $campagne=[];
        foreach($link as $l){
-		$cam=$this->getDoctrine()->getManager()->getRepository(Campagne::class)->findBy(["id" =>$l['campagne']]);
+		$cam=$this->getDoctrine()->getManager()->getRepository(Campagne::class)->findBy(["id" =>$l['campagne'],"etat"=>1]);
 		foreach($cam as $k){
-		  $campagne[]=array("campagne" =>array("forms" =>$k->getFormulaire(),"nom"=>$k->getNom(),"idCam"=>$k->getId()),"idform"=>$l["formulaire"]);
+		  $forms=json_decode($k->getFormulaire());
+		  $questionnaires=[];
+		  for($i=0;$i<count($forms);$i++){
+			 $historique=$this->getDoctrine()->getManager()->getRepository(Historique::class)->findOneBy(["idUser"=>intval($datas->id),"idFormulaire"=>intval($forms[$i]->id),"campagne"=>intval($k->getId())]);
+			 if(!$historique){
+		     	array_push($questionnaires,$forms[$i]);
+			 }
+		  }
+		  if(count($questionnaires)>0){
+		 	 $campagne[]=array("campagne" =>array("forms" =>$questionnaires,"nom"=>$k->getNom(),"idCam"=>$k->getId()),"idform"=>$l["formulaire"]);
+		  }
 		}
 	   }
 	   $reponses=[];

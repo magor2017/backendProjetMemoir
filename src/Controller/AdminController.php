@@ -10,6 +10,8 @@ use App\Entity\Formulaire;
 use App\Entity\Campagne;
 use App\Entity\Cible;
 use App\Entity\Linkcible;
+use App\Entity\Historique;
+use App\Entity\Reponse;
 class AdminController extends Controller{
   
   /**
@@ -22,6 +24,10 @@ class AdminController extends Controller{
 	   $formulaire=new Formulaire();
 	   $formulaire->setQuestions($datas->question);
 	   $formulaire->setTitre($datas->titre);
+	   $formulaire->setCampagne(0);
+	   \date_default_timezone_set('UTC');
+	   $date=new \DateTime();
+	   $formulaire->setDateCreation($date);
 	   $em->persist($formulaire);
 	   $em->flush();
 	    
@@ -131,11 +137,61 @@ class AdminController extends Controller{
 		$em=$this->getDoctrine()->getManager();
 		$datas=json_decode($_POST["param"]);
 		$campagne=$this->getDoctrine()->getRepository(Campagne::class)->findOneBy(["id" =>intval($datas->id)]);
-		//$campagne->setFormulaire($datas->form);
-		//$em->persist($campagne);
-		//$em->flush();
-		return new Response(json_encode(array("id"=>$campagne->getId(),"nom"=>$campagne->getNom(),"objectif"=>$campagne->getObjectif(),"observation"=>$campagne->getObservation(),"etat"=>$campagne->getEtat(),"date_debut"=>$campagne->getDateDebut(),"date_fin"=>$campagne->getDateFin(),"date_creation"=>$campagne->getDateCreation(),"formulaire"=>$campagne->getFormulaire())));
+		$forms=json_decode($campagne->getFormulaire());
+		$nbEtudiants=0;
+		$nbcibleRestant=0;
+		for($i=0;$i<count($forms);$i++){
+			$nbEtudiants+=$this->getNbCible($datas->id,$forms[$i]->id);
+			$nbcibleRestant+=$this->getNbCibleRestant($datas->id,$forms[$i]->id);
+		}
+		$reponse=$this->getDoctrine()->getRepository(Reponse::class)->findBy(["campagne"=>intval($datas->id)]);
+		$rep=[];
+		foreach($reponse as $r){
+			$rep[]=array("form"=>$r->getFormulaire(),"reponse"=>$r->getReponse(),"cible"=>$this->getNbCible(intval($datas->id),intval($r->getFormulaire())));
 
+		}
+		return new Response(json_encode(array("id"=>$campagne->getId(),"nom"=>$campagne->getNom(),"objectif"=>$campagne->getObjectif(),"observation"=>$campagne->getObservation(),"etat"=>$campagne->getEtat(),"date_debut"=>$campagne->getDateDebut(),"date_fin"=>$campagne->getDateFin(),"date_creation"=>$campagne->getDateCreation(),"formulaire"=>$campagne->getFormulaire(),"nbcible"=>$nbEtudiants,"cibleRestant"=>$nbcibleRestant,"reponse"=>$rep)));
+
+	}
+	/**
+	 * @Route("/getcible")
+	 */
+	public function getNbCible($camp,$form){
+		//$camp="2";
+		//$form="10";
+		$etudiants=$this->getDoctrine()->getRepository(Users::class)->findAll();
+		$bdd=new \pdo("mysql:host=localhost;dbname=projetmemoir","root","");
+		$nbEtudiant=0;
+		for($i=0;$i<count($etudiants);$i++){
+			$req=$bdd->prepare("SELECT * FROM linkcible WHERE campagne=:c AND formulaire=:f AND niveau LIKE '%".$etudiants[$i]->getNiveau()."%' AND classe LIKE '%".$etudiants[$i]->getClasse()."%'");
+			$req->execute(array("c"=>intval($camp),"f"=>intval($form)));
+			if($req->fetch()){
+				$nbEtudiant++;
+			}
+	   }
+	   return $nbEtudiant;
+	}
+	/**
+	 * @Route("/ciblerestant")
+	 */
+	public function getNbCibleRestant($camp,$form){
+		//$camp="2";
+		//$form="9";
+		$etudiants=$this->getDoctrine()->getRepository(Users::class)->findAll();
+		$bdd=new \pdo("mysql:host=localhost;dbname=projetmemoir","root","");
+		$nbEtudiant=0;
+		for($i=0;$i<count($etudiants);$i++){
+			$req=$bdd->prepare("SELECT * FROM linkcible WHERE campagne=:c AND formulaire=:f AND niveau LIKE '%".$etudiants[$i]->getNiveau()."%' AND classe LIKE '%".$etudiants[$i]->getClasse()."%'");
+			$req->execute(array("c"=>intval($camp),"f"=>intval($form)));
+			if($req->fetch()){
+				$historique=$this->getDoctrine()->getRepository(Historique::class)->findOneBy(["idUser"=>$etudiants[$i]->getId(),"campagne"=>intval($camp),"idFormulaire"=>intval($form)]);
+				if(!$historique){
+					$nbEtudiant++;
+				}
+			}
+	   }
+	  // return new Response($nbEtudiant);
+	  return $nbEtudiant;
 	}
 	/**
 	 * @Route("/getAllCible")
